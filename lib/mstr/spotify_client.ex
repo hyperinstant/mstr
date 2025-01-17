@@ -14,6 +14,13 @@ defmodule Mstr.SpotifyClient do
     end
   end
 
+  def valid_track_url?(url) do
+    case extract_track_id(url) do
+      {:ok, _} -> true
+      _ -> false
+    end
+  end
+
   # Server
 
   def start_link(args) do
