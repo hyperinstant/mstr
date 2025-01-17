@@ -14,7 +14,7 @@ defmodule Mstr.Application do
       {Phoenix.PubSub, name: Mstr.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Mstr.Finch},
-      {SSpotify,
+      {SSpotify.TokenManager,
        %{
          client_id: Application.fetch_env!(:mstr, :spotify_client_id),
          client_secret: Application.fetch_env!(:mstr, :spotify_client_secret)

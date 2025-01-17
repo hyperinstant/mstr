@@ -27,7 +27,7 @@ defmodule MstrWeb.EnrollLive.Profile do
   end
 
   def validate_track(field, track_url) do
-    if SpotifyClient.valid_track_url?(track_url) do
+    if SSpotify.valid_track_url?(track_url) do
       []
     else
       Keyword.put([], field, "link is not recognised")

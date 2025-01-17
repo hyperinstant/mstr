@@ -1,4 +1,4 @@
-defmodule SSpotify.State do
+defmodule SSpotify.TokenManager.State do
   defstruct [:client_id, :client_secret, :token, :refreshed_at, :expires_in]
   alias __MODULE__
 
