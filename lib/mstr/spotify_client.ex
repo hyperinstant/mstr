@@ -2,14 +2,16 @@ defmodule Mstr.SpotifyClient do
   use GenServer
   require Logger
   alias Mstr.SpotifyClient.State
+  alias Mstr.SpotifyClient.Track
 
   @spotify_api_uri URI.parse("https://api.spotify.com/v1/")
   @ets_table :spotify_token_store
 
   # Client
   def track_from(url) when is_binary(url) do
-    with {:ok, track_id} <- extract_track_id(url) do
-      track(track_id)
+    with {:ok, track_id} <- extract_track_id(url),
+         {:ok, track_map} <- track(track_id) do
+      Track.from_json(track_map)
     end
   end
 
@@ -49,17 +51,12 @@ defmodule Mstr.SpotifyClient do
         client_secret: state.client_secret
       })
 
-    request =
-      Finch.build(
-        :post,
-        "https://accounts.spotify.com/api/token",
-        [{"Content-Type", "application/x-www-form-urlencoded"}],
-        body
-      )
-
-    case Finch.request(request, Mstr.Finch) do
-      {:ok, response} ->
-        resp = Jason.decode!(response.body)
+    case Req.post(
+           "https://accounts.spotify.com/api/token",
+           body: body,
+           headers: [{"Content-Type", "application/x-www-form-urlencoded"}]
+         ) do
+      {:ok, %Req.Response{status: 200, body: resp}} ->
         State.token_refreshed(state, Map.fetch!(resp, "access_token"), Map.fetch!(resp, "expires_in"))
 
       {:error, error} ->
@@ -79,28 +76,24 @@ defmodule Mstr.SpotifyClient do
   end
 
   defp track(track_id) do
-    URI.parse("https://api.spotify.com/v1/")
+    URI.parse(@spotify_api_uri)
     |> URI.append_path("/tracks")
     |> URI.append_path("/#{track_id}")
     |> make_api_request()
   end
 
   defp make_api_request(uri) do
-    headers = [
-      {"Authorization", "Bearer #{token()}"},
-      {"Content-Type", "application/json"}
-    ]
+    case Req.get(uri, auth: {:bearer, token()}) do
+      {:ok, %Req.Response{status: 200, body: body}} ->
+        {:ok, body}
 
-    request = Finch.build(:get, to_string(uri), headers)
-
-    case Finch.request(request, Mstr.Finch) do
-      {:ok, %Finch.Response{status: 200, body: body}} ->
-        {:ok, Jason.decode!(body)}
-
-      {:ok, %Finch.Response{status: 401}} ->
+      {:ok, %Req.Response{status: 401}} ->
         {:error, :unauthorized}
 
-      {:ok, %Finch.Response{status: 404}} ->
+      {:ok, %Req.Response{status: 400, body: %{"error" => %{"message" => "Invalid base62 id", "status" => 400}}}} ->
+        {:error, :malformed_id}
+
+      {:ok, %Req.Response{status: 404}} ->
         {:error, :not_found}
 
       {:error, _reason} = error ->
