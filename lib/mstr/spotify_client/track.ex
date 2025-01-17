@@ -3,12 +3,15 @@ defmodule Mstr.SpotifyClient.Track do
   alias Mstr.SpotifyClient.Album
   import Mstr.SpotifyClient.Helpers
 
+  @type external_id_type :: :isrc | :ean | :upc
+  @type external_ids :: %{optional(external_id_type) => String.t()}
+
   @type t :: %__MODULE__{
           id: String.t(),
           name: String.t(),
           duration_ms: integer(),
           explicit: boolean(),
-          external_ids: map(),
+          external_ids: external_ids(),
           external_urls: map(),
           href: String.t(),
           is_local: boolean(),
@@ -56,7 +59,7 @@ defmodule Mstr.SpotifyClient.Track do
       name: json["name"],
       duration_ms: json["duration_ms"],
       explicit: json["explicit"],
-      external_ids: json["external_ids"],
+      external_ids: parse_external_ids(json["external_ids"]),
       external_urls: json["external_urls"],
       href: json["href"],
       is_local: json["is_local"],
@@ -118,4 +121,29 @@ defmodule Mstr.SpotifyClient.Track do
   Returns true if the track has a preview URL available
   """
   def has_preview?(%__MODULE__{preview_url: url}), do: !is_nil(url)
+
+  def parse_external_ids(nil), do: %{}
+
+  def parse_external_ids(external_ids) when is_map(external_ids) do
+    external_ids
+    |> Enum.map(fn {key, value} -> {String.to_existing_atom(key), value} end)
+    |> Map.new()
+  rescue
+    # In case of unknown external ID types
+    ArgumentError -> %{}
+  end
+
+  @doc """
+  Gets the ISRC (International Standard Recording Code) if available.
+  """
+  def isrc(%__MODULE__{external_ids: external_ids}) do
+    external_ids[:isrc]
+  end
+
+  @doc """
+  Gets a specific external ID by type.
+  """
+  def external_id(%__MODULE__{external_ids: external_ids}, type) when is_atom(type) do
+    external_ids[type]
+  end
 end
