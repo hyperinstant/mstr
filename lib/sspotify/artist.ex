@@ -1,4 +1,4 @@
-defmodule Mstr.SpotifyClient.Artist do
+defmodule SSpotify.Artist do
   @type t :: %__MODULE__{
           id: String.t(),
           name: String.t(),

@@ -1,4 +1,4 @@
-defmodule Mstr.SpotifyClient.Image do
+defmodule SSpotify.Image do
   @type t :: %__MODULE__{
           url: String.t(),
           height: integer(),

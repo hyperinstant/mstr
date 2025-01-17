@@ -1,4 +1,4 @@
-defmodule Mstr.SpotifyClient.State do
+defmodule SSpotify.State do
   defstruct [:client_id, :client_secret, :token, :refreshed_at, :expires_in]
   alias __MODULE__
 

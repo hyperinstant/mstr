@@ -1,7 +1,7 @@
-defmodule Mstr.SpotifyClient.Track do
-  alias Mstr.SpotifyClient.Artist
-  alias Mstr.SpotifyClient.Album
-  import Mstr.SpotifyClient.Helpers
+defmodule SSpotify.Track do
+  alias SSpotify.Artist
+  alias SSpotify.Album
+  import SSpotify.Helpers
 
   @type external_id_type :: :isrc | :ean | :upc
   @type external_ids :: %{optional(external_id_type) => String.t()}

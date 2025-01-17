@@ -1,8 +1,8 @@
-defmodule Mstr.SpotifyClient do
+defmodule SSpotify do
   use GenServer
   require Logger
-  alias Mstr.SpotifyClient.State
-  alias Mstr.SpotifyClient.Track
+  alias SSpotify.State
+  alias SSpotify.Track
 
   @spotify_api_uri URI.parse("https://api.spotify.com/v1/")
   @ets_table :spotify_token_store

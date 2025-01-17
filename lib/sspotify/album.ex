@@ -1,7 +1,7 @@
-defmodule Mstr.SpotifyClient.Album do
-  import Mstr.SpotifyClient.Helpers
-  alias Mstr.SpotifyClient.Artist
-  alias Mstr.SpotifyClient.Image
+defmodule SSpotify.Album do
+  import SSpotify.Helpers
+  alias SSpotify.Artist
+  alias SSpotify.Image
 
   @type t :: %__MODULE__{
           id: String.t(),

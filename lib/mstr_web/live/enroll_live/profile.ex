@@ -1,7 +1,7 @@
 defmodule MstrWeb.EnrollLive.Profile do
   use Ecto.Schema
   import Ecto.Changeset
-  alias Mstr.SpotifyClient
+  alias SSpotify
   alias __MODULE__
 
   @primary_key {:id, :binary_id, autogenerate: true}
