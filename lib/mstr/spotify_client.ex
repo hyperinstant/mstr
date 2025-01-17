@@ -1,11 +1,10 @@
 defmodule Mstr.SpotifyClient do
   use GenServer
   require Logger
+  alias Mstr.SpotifyClient.State
 
   @spotify_api_uri URI.parse("https://api.spotify.com/v1/")
   @ets_table :spotify_token_store
-
-  defstruct [:token]
 
   # Client
   def track_from(url) when is_binary(url) do
@@ -28,24 +27,26 @@ defmodule Mstr.SpotifyClient do
   end
 
   def init(args) do
-    validate!(args)
     :ets.new(@ets_table, [:set, :protected, :named_table])
-    {:ok, %__MODULE__{}, {:continue, args}}
+    {:ok, State.new!(args.client_id, args.client_secret), {:continue, nil}}
   end
 
-  def handle_continue(args, state) do
-    token = request_token!(args.client_id, args.client_secret)
-    :ets.insert(:spotify_token_store, {:token, token})
-    state = %{state | token: token}
-    {:noreply, state}
+  def handle_continue(_args, state) do
+    {:noreply, refresh_token(state)}
   end
 
-  defp request_token!(client_id, client_secret) do
+  defp refresh_token(state) do
+    state = request_token!(state)
+    :ets.insert(:spotify_token_store, {:token, state.token})
+    state
+  end
+
+  defp request_token!(state) do
     body =
       URI.encode_query(%{
         grant_type: "client_credentials",
-        client_id: client_id,
-        client_secret: client_secret
+        client_id: state.client_id,
+        client_secret: state.client_secret
       })
 
     request =
@@ -58,21 +59,12 @@ defmodule Mstr.SpotifyClient do
 
     case Finch.request(request, Mstr.Finch) do
       {:ok, response} ->
-        Jason.decode!(response.body)["access_token"]
+        resp = Jason.decode!(response.body)
+        State.token_refreshed(state, Map.fetch!(resp, "access_token"), Map.fetch!(resp, "expires_in"))
 
       {:error, error} ->
         Logger.error(inspect(error))
         raise error
-    end
-  end
-
-  defp validate!(args) do
-    if not is_binary(args.client_id) do
-      raise "Spotify client_id must be a string"
-    end
-
-    if not is_binary(args.client_secret) do
-      raise "Spotify client_secret must be a string"
     end
   end
 
