@@ -17,7 +17,7 @@ defmodule MstrWeb.Router do
   scope "/", MstrWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live "/", Enroll.Index, :index
   end
 
   # Other scopes may use custom stacks.
