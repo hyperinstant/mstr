@@ -32,32 +32,25 @@ defmodule SSpotify.TracksTest do
       assert {:error, %InvalidTrackURLs{urls: [invalid_url_1, invalid_url_2]}} == SSpotify.tracks_from(urls)
     end
 
-    test "returns Tracks for each resolved track" do
+    test "returns found tracks in the same order" do
       id1 = "33qPnmgyN1aRVLQfbic2Sq"
       id2 = "4xeOXTjSNsyF4djgo83SiR"
       id3 = "5y3mB1q4eauAdC0o9JgLGz"
 
-      defmodule FakeAPIClient do
-        def request_token!("a client id", "a client secret") do
-          %{"access_token" => "a token", "expires_in" => 3600}
-        end
-      end
-
-      start_supervised!(
-        {SSpotify.TokenManager,
-         %{client_id: "a client id", client_secret: "a client secret", api_client: FakeAPIClient}}
-      )
+      SSpotify.Fixtures.start_fake_token_manager()
 
       Req.Test.stub(SSpotify.ApiClient, fn conn ->
         Req.Test.json(conn, %{"tracks" => Enum.map([id1, id2, id3], &SSpotify.Fixtures.track_json!/1)})
       end)
 
-      assert {:ok, Enum.map([id1, id2, id3], &SSpotify.Fixtures.track!/1)} ==
+      assert {:ok, %{found: found_tracks, missing: []}} =
                SSpotify.tracks_from([
                  "https://open.spotify.com/track/#{id1}?si=462304c8a05c4d39",
                  "https://open.spotify.com/track/#{id2}?si=0dd7da796ab14cd2",
                  "https://open.spotify.com/track/#{id3}?si=16f565fbc24249f7"
                ])
+
+      assert found_tracks == Enum.map([id1, id2, id3], &SSpotify.Fixtures.track!/1)
     end
   end
 end

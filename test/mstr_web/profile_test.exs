@@ -2,7 +2,6 @@ defmodule MstrWeb.ProfileTest do
   use ExUnit.Case, async: true
   alias MstrWeb.EnrollLive.Profile
   alias Mstr.DataCase
-  alias SSpotify.Fixtures, as: SSpotifyFixtures
 
   describe "resolve" do
     test "returns {:error, changeset} if there are validation errors" do
@@ -26,7 +25,7 @@ defmodule MstrWeb.ProfileTest do
       track_id2 = "4xeOXTjSNsyF4djgo83SiR"
       track_id3 = "5y3mB1q4eauAdC0o9JgLGz"
 
-      SSpotifyFixtures.start_fake_token_manager()
+      SSpotify.Fixtures.start_fake_token_manager()
 
       Req.Test.stub(SSpotify.ApiClient, fn conn ->
         Req.Test.json(conn, %{
