@@ -70,19 +70,14 @@ defmodule SSpotify do
   # - missing: List of original URLs that didn't yield Spotify tracks
   defp split_found_and_missing_tracks(urls, ids, track_maps) do
     Enum.reduce(ids, %{found: [], missing: []}, fn id, acc ->
-      track_map = find_track_map(id, track_maps)
-      categorize_track(track_map, id, urls, acc)
+      track_map = Enum.find(track_maps, &(&1["id"] == id))
+
+      if track_map do
+        %{acc | found: acc.found ++ [Track.from_json(track_map)]}
+      else
+        url_for_missing_track_by_id = Enum.find(urls, &(extract_track_id!(&1) == id))
+        %{acc | missing: acc.missing ++ [url_for_missing_track_by_id]}
+      end
     end)
-  end
-
-  defp find_track_map(id, track_maps), do: Enum.find(track_maps, &(&1["id"] == id))
-
-  defp categorize_track(nil, id, urls, acc) do
-    original_url = Enum.find(urls, &(extract_track_id!(&1) == id))
-    %{acc | missing: acc.missing ++ [original_url]}
-  end
-
-  defp categorize_track(track_map, _id, _urls, acc) do
-    %{acc | found: acc.found ++ [Track.from_json(track_map)]}
   end
 end
