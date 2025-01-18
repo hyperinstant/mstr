@@ -59,11 +59,15 @@ defmodule SSpotify do
     end
   end
 
-  # we want to sort results in two buckets `found` and `missing`
-  # in `found` we will put parsed tracks, in `missing` we will put urls for which Spotify API didn't return a track
-  # we will corelate urls with `nil`s returned from Spotify API by:
-  # - excluding ids from found tracks
-  # - iterating over remaining ids, and comparing it's with the one at hand
+  # When fetching multiple tracks from Spotify, the API doesn't indicate which specific IDs weren't found.
+  # Instead, it just returns data for tracks it could find. To identify which URLs resulted in missing tracks:
+  # 1. We start with user-provided URLs and their extracted IDs
+  # 2. We receive track data only for found tracks from Spotify
+  # 3. We need to match IDs back to original URLs to identify which URLs led to missing tracks
+  #
+  # Returns a map with:
+  # - found: List of parsed Track structs from successful Spotify lookups
+  # - missing: List of original URLs that didn't yield Spotify tracks
   defp split_found_and_missing_tracks(urls, ids, track_maps) do
     Enum.reduce(ids, %{found: [], missing: []}, fn id, acc ->
       track_map = Enum.find(track_maps, &(&1["id"] == id))
