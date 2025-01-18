@@ -9,9 +9,9 @@ defmodule MstrWeb.PersonLive.FormComponent do
     <div>
       <.simple_form for={@form} id="profile-form" phx-target={@myself} phx-change="validate" phx-submit="save">
         <.input field={@form[:nick]} type="text" label="Nick" required={true} phx-debounce="blur" />
-        <.input field={@form[:track_1]} type="text" label="Song  #1 (Spotify link)" required={true} phx-debounce="blur" />
-        <.input field={@form[:track_2]} type="text" label="Song  #2 (Spotify link)" required={true} phx-debounce="blur" />
-        <.input field={@form[:track_3]} type="text" label="Song  #2 (Spotify link)" required={true} phx-debounce="blur" />
+        <.input field={@form[:track_url_1]} type="text" label="Song  #1 (Spotify link)" required={true} phx-debounce="blur" />
+        <.input field={@form[:track_url_2]} type="text" label="Song  #2 (Spotify link)" required={true} phx-debounce="blur" />
+        <.input field={@form[:track_url_3]} type="text" label="Song  #2 (Spotify link)" required={true} phx-debounce="blur" />
         <.input field={@form[:email]} type="text" label="Email" required={true} phx-debounce="blur" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Person</.button>
@@ -38,7 +38,10 @@ defmodule MstrWeb.PersonLive.FormComponent do
   end
 
   def handle_event("save", %{"profile" => profile_params}, socket) do
-    save_profile(socket, socket.assigns.action, profile_params)
+    Profile.resolve(socket.assigns.profile, profile_params)
+    changeset = Profile.validate(socket.assigns.profile, profile_params)
+    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+    # save_profile(socket, socket.assigns.action, profile_params)
   end
 
   # defp save_profile(socket, :edit, profile_params) do
