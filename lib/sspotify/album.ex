@@ -1,7 +1,7 @@
 defmodule SSpotify.Album do
-  import SSpotify.Helpers
   alias SSpotify.Artist
   alias SSpotify.Image
+  alias SSpotify.Helpers
 
   @type t :: %__MODULE__{
           id: String.t(),
@@ -43,11 +43,11 @@ defmodule SSpotify.Album do
       id: json["id"],
       name: json["name"],
       album_type: json["album_type"],
-      artists: map_if_present(json["artists"], &Artist.from_json/1),
+      artists: Helpers.map_if_present(json["artists"], &Artist.from_json/1),
       available_markets: json["available_markets"],
       external_urls: json["external_urls"],
       href: json["href"],
-      images: map_if_present(json["images"], &Image.from_json/1),
+      images: Helpers.map_if_present(json["images"], &Image.from_json/1),
       release_date: json["release_date"],
       release_date_precision: json["release_date_precision"],
       restrictions: json["restrictions"],

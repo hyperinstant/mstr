@@ -1,7 +1,7 @@
 defmodule SSpotify.Track do
   alias SSpotify.Artist
   alias SSpotify.Album
-  import SSpotify.Helpers
+  alias SSpotify.Helpers
 
   @type external_id_type :: :isrc | :ean | :upc
   @type external_ids :: %{optional(external_id_type) => String.t()}
@@ -67,7 +67,7 @@ defmodule SSpotify.Track do
       preview_url: json["preview_url"],
       uri: json["uri"],
       album: json["album"] && Album.from_json(json["album"]),
-      artists: map_if_present(json["artists"], &Artist.from_json/1),
+      artists: Helpers.map_if_present(json["artists"], &Artist.from_json/1),
       available_markets: json["available_markets"],
       disc_number: json["disc_number"],
       popularity: json["popularity"],

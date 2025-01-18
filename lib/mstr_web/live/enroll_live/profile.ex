@@ -24,6 +24,8 @@ defmodule MstrWeb.EnrollLive.Profile do
     |> validate_change(:track_1, &validate_track/2)
     |> validate_change(:track_2, &validate_track/2)
     |> validate_change(:track_3, &validate_track/2)
+
+    # |> validate_tracks()
   end
 
   def validate_track(field, track_url) do
@@ -33,4 +35,38 @@ defmodule MstrWeb.EnrollLive.Profile do
       Keyword.put([], field, "link is not recognised")
     end
   end
+
+  # defp validate_tracks(changeset) do
+  #   if changeset.valid? do
+  #     profile = apply_changes(changeset)
+
+  #     profile
+  #     |> verify_spotify_tracks()
+  #     |> Enum.reduce(changeset, fn {field, error}, acc ->
+  #       add_error(acc, field, error)
+  #     end)
+  #   else
+  #     changeset
+  #   end
+  # end
+
+  # defp verify_spotify_tracks(profile) do
+  #   tracks = [profile.track_1, profile.track_2, profile.track_3]
+
+  #   case SSpotify.tracks_from(tracks) do
+  #     {:ok, _tracks} ->
+  #       []
+
+  #     {:error, %SSpotify.Errors.InvalidTrackUrl{url: url}} ->
+  #       # Find which field contains the invalid URL and add the error
+  #       field =
+  #         cond do
+  #           profile.track_1 == url -> :track_1
+  #           profile.track_2 == url -> :track_2
+  #           profile.track_3 == url -> :track_3
+  #         end
+
+  #       [{field, "link is not recognised"}]
+  #   end
+  # end
 end

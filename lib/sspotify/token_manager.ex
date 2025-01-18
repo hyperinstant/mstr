@@ -20,7 +20,7 @@ defmodule SSpotify.TokenManager do
 
   def init(args) do
     :ets.new(@ets_table, [:set, :protected, :named_table])
-    {:ok, State.new!(args.client_id, args.client_secret), {:continue, nil}}
+    {:ok, State.new!(args), {:continue, nil}}
   end
 
   def handle_continue(_args, state) do
@@ -39,25 +39,8 @@ defmodule SSpotify.TokenManager do
   end
 
   defp request_token!(state) do
-    body =
-      URI.encode_query(%{
-        grant_type: "client_credentials",
-        client_id: state.client_id,
-        client_secret: state.client_secret
-      })
-
-    case Req.post(
-           "https://accounts.spotify.com/api/token",
-           body: body,
-           headers: [{"Content-Type", "application/x-www-form-urlencoded"}]
-         ) do
-      {:ok, %Req.Response{status: 200, body: resp}} ->
-        State.token_refreshed(state, Map.fetch!(resp, "access_token"), Map.fetch!(resp, "expires_in"))
-
-      {:error, error} ->
-        Logger.error(inspect(error))
-        raise error
-    end
+    resp = state.api_client.request_token!(state.client_id, state.client_secret)
+    State.token_refreshed(state, Map.fetch!(resp, "access_token"), Map.fetch!(resp, "expires_in"))
   end
 
   defp schedule_refresh(expires_in) do

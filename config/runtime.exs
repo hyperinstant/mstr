@@ -45,5 +45,7 @@ if config_env() == :prod do
     secret_key_base: secret_key_base
 end
 
-config :mstr, :spotify_client_id, System.fetch_env!("SPOTIFY_CLIENT_ID")
-config :mstr, :spotify_client_secret, System.fetch_env!("SPOTIFY_CLIENT_SECRET")
+if config_env() != :test do
+  config :mstr, :spotify_client_id, System.fetch_env!("SPOTIFY_CLIENT_ID")
+  config :mstr, :spotify_client_secret, System.fetch_env!("SPOTIFY_CLIENT_SECRET")
+end
