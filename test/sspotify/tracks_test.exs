@@ -52,5 +52,29 @@ defmodule SSpotify.TracksTest do
 
       assert found_tracks == Enum.map([id1, id2, id3], &SSpotify.Fixtures.track!/1)
     end
+
+    test "returns missing urls in {:ok, %{missing: [...]}" do
+      id1 = "33qPnmgyN1aRVLQfbic2Sq"
+      id2 = "4xeOXTjSNsyF4djgo83SiR"
+      id3 = "5y3mB1q4eauAdC0o9JgLGz"
+
+      SSpotify.Fixtures.start_fake_token_manager()
+
+      Req.Test.stub(SSpotify.ApiClient, fn conn ->
+        Req.Test.json(conn, %{"tracks" => [SSpotify.Fixtures.track_json!(id2)]})
+      end)
+
+      assert {:ok, %{missing: missing_tracks}} =
+               SSpotify.tracks_from([
+                 "https://open.spotify.com/track/#{id1}?si=462304c8a05c4d39",
+                 "https://open.spotify.com/track/#{id2}?si=0dd7da796ab14cd2",
+                 "https://open.spotify.com/track/#{id3}?si=16f565fbc24249f7"
+               ])
+
+      assert missing_tracks == [
+               "https://open.spotify.com/track/#{id1}?si=462304c8a05c4d39",
+               "https://open.spotify.com/track/#{id3}?si=16f565fbc24249f7"
+             ]
+    end
   end
 end
