@@ -69,30 +69,6 @@ defmodule MstrWeb.ProfileTest do
       assert DataCase.errors_on(changeset)[:track_url_3] == ["track is not found"]
     end
 
-    test "correctly populates fields for duplicated missing tracks" do
-      track_id2 = "4xeOXTjSNsyF4djgo83SiR"
-      SSpotify.Fixtures.start_fake_token_manager()
-
-      Req.Test.stub(SSpotify.ApiClient, fn conn ->
-        Req.Test.json(conn, %{
-          "tracks" => [nil, SSpotify.Fixtures.track_json!(track_id2), nil]
-        })
-      end)
-
-      assert {:error, changeset} =
-               Profile.resolve(%Profile{}, %{
-                 "email" => "tes@example.com",
-                 "nick" => "a nick",
-                 "track_url_1" => "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=cadde751415f4ebb",
-                 "track_url_2" => "https://open.spotify.com/track/#{track_id2}",
-                 "track_url_3" => "https://open.spotify.com/track/5y3mB1q4eauAdC0o9JgLGz?si=cadde751415f4ebb"
-               })
-
-      assert DataCase.errors_on(changeset)[:track_url_1] == ["track is not found"]
-      assert DataCase.errors_on(changeset)[:track_url_2] == nil
-      assert DataCase.errors_on(changeset)[:track_url_3] == ["track is not found"]
-    end
-
     test "returns error even if only one track has malformed url" do
       assert {:error, changeset} =
                Profile.resolve(%Profile{}, %{
@@ -138,6 +114,24 @@ defmodule MstrWeb.ProfileTest do
                  "track_url_2" => "https://open.spotify.com/track/#{track_id2}?si=cadde751415f4ebb",
                  "track_url_3" => "https://open.spotify.com/track/#{track_id3}?si=cadde751415f4ebb"
                })
+    end
+
+    test "detects duplicate tracks with same track ID" do
+      track_id = "33qPnmgyN1aRVLQfbic2Sq"
+
+      changeset =
+        Profile.change(%Profile{}, %{
+          "email" => "test@example.com",
+          "nick" => "a nick",
+          "track_url_1" => "https://open.spotify.com/track/#{track_id}?si=a-first-track",
+          "track_url_2" => "https://open.spotify.com/track/#{track_id}?si=a-second-track",
+          "track_url_3" => "https://open.spotify.com/track/5y3mB1q4eauAdC0o9JgLGz?si=cadde751415f4ebb"
+        })
+
+      assert changeset.valid? == false
+      assert DataCase.errors_on(changeset)[:track_url_1] == ["track must be unique"]
+      assert DataCase.errors_on(changeset)[:track_url_2] == ["track must be unique"]
+      refute DataCase.errors_on(changeset)[:track_url_3]
     end
   end
 end
