@@ -36,10 +36,7 @@ defmodule MstrWeb.EnrollLive.Profile do
 
         {:ok, %{missing: missing_track_urls}} ->
           changeset =
-            Enum.reduce(missing_track_urls, changeset, fn missing_track_url, changeset ->
-              field = find_field!(changeset, missing_track_url)
-              add_error(changeset, field, "track is not found")
-            end)
+            Enum.reduce(missing_track_urls, changeset, &mark_field_as_missing/2)
 
           {:error, changeset}
       end
@@ -90,12 +87,29 @@ defmodule MstrWeb.EnrollLive.Profile do
   #   track
   # end
 
-  defp find_field!(changeset, url) do
-    cond do
-      fetch_change!(changeset, :track_url_1) == url -> :track_url_1
-      fetch_change!(changeset, :track_url_2) == url -> :track_url_2
-      fetch_change!(changeset, :track_url_3) == url -> :track_url_3
-    end
+  defp mark_field_as_missing(url, changeset) do
+    error_text = "track is not found"
+
+    field =
+      changeset.data.__struct__.__schema__(:fields)
+      |> Enum.find(fn field ->
+        case fetch_change(changeset, field) do
+          {:ok, ^url} ->
+            field_errors = Keyword.get_values(changeset.errors, field)
+            already_marked_as_not_found = Enum.find(field_errors, &(elem(&1, 0) == error_text))
+
+            if already_marked_as_not_found do
+              false
+            else
+              true
+            end
+
+          _ ->
+            false
+        end
+      end)
+
+    add_error(changeset, field, error_text)
   end
 
   # defp validate_tracks(changeset) do

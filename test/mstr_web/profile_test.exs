@@ -69,7 +69,31 @@ defmodule MstrWeb.ProfileTest do
       assert DataCase.errors_on(changeset)[:track_url_3] == ["track is not found"]
     end
 
-    test "returns error even if only one track had malformed url"
+    test "correctly populates fields for duplicated missing tracks" do
+      track_id2 = "4xeOXTjSNsyF4djgo83SiR"
+      SSpotify.Fixtures.start_fake_token_manager()
+
+      Req.Test.stub(SSpotify.ApiClient, fn conn ->
+        Req.Test.json(conn, %{
+          "tracks" => [nil, SSpotify.Fixtures.track_json!(track_id2), nil]
+        })
+      end)
+
+      assert {:error, changeset} =
+               Profile.resolve(%Profile{}, %{
+                 "email" => "tes@example.com",
+                 "nick" => "a nick",
+                 "track_url_1" => "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=cadde751415f4ebb",
+                 "track_url_2" => "https://open.spotify.com/track/#{track_id2}",
+                 "track_url_3" => "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=cadde751415f4ebb"
+               })
+
+      assert DataCase.errors_on(changeset)[:track_url_1] == ["track is not found"]
+      assert DataCase.errors_on(changeset)[:track_url_2] == nil
+      assert DataCase.errors_on(changeset)[:track_url_3] == ["track is not found"]
+    end
+
+    test "returns error even if only one track has malformed url"
 
     test "returns {:ok, profile} with tracks order exactly the were ordered in the form when all tracks were found"
   end
