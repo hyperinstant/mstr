@@ -42,9 +42,6 @@ defmodule MstrWeb.EnrollLive.Profile do
     else
       {:error, changeset}
     end
-
-    #      {:ok, tracks} <- resolve_tracks(changeset) do
-    #   {:ok, tracks}
   end
 
   def changeset(profile, attrs) do

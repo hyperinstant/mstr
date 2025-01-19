@@ -38,41 +38,19 @@ defmodule MstrWeb.PersonLive.FormComponent do
   end
 
   def handle_event("save", %{"profile" => profile_params}, socket) do
-    Profile.resolve(socket.assigns.profile, profile_params)
-    changeset = Profile.change(socket.assigns.profile, profile_params)
-    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
-    # save_profile(socket, socket.assigns.action, profile_params)
+    case Profile.resolve(socket.assigns.profile, profile_params) do
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+
+      {:ok, profile} ->
+        notify_parent({:saved, profile})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Person saved successfully")
+         |> push_patch(to: ~p"/")}
+    end
   end
 
-  # defp save_profile(socket, :edit, profile_params) do
-  #   case Matches.update_profile(socket.assigns.profile, profile_params) do
-  #     {:ok, profile} ->
-  #       notify_parent({:saved, profile})
-
-  #       {:noreply,
-  #        socket
-  #        |> put_flash(:info, "Person updated successfully")
-  #        |> push_patch(to: socket.assigns.patch)}
-
-  #     {:error, %Ecto.Changeset{} = changeset} ->
-  #       {:noreply, assign(socket, form: to_form(changeset))}
-  #   end
-  # end
-
-  # defp save_profile(socket, :new, _profile_params) do
-  # case Matches.create_profile(profile_params) do
-  #   {:ok, profile} ->
-  #     notify_parent({:saved, profile})
-
-  #     {:noreply,
-  #      socket
-  #      |> put_flash(:info, "Person created successfully")
-  #      |> push_patch(to: socket.assigns.patch)}
-
-  #   {:error, %Ecto.Changeset{} = changeset} ->
-  #     {:noreply, assign(socket, form: to_form(changeset))}
-  # end
-  # end
-
-  # defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
+  defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
 end

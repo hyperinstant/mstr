@@ -14,6 +14,6 @@ defmodule MstrWeb.EnrollLive.Index do
 
   @impl true
   def handle_info({MstrWeb.PersonLive.FormComponent, {:saved, person}}, socket) do
-    {:noreply, stream_insert(socket, :personalities, person)}
+    {:noreply, socket}
   end
 end
