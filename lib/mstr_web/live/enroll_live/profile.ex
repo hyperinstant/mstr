@@ -54,7 +54,7 @@ defmodule MstrWeb.EnrollLive.Profile do
     |> validate_no_duplicate_tracks()
   end
 
-  def validate_track_url(field, track_url) do
+  defp validate_track_url(field, track_url) do
     if SSpotify.valid_track_url?(track_url) do
       []
     else
