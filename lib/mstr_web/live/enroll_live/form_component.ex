@@ -34,7 +34,11 @@ defmodule MstrWeb.PersonLive.FormComponent do
   @impl true
   def handle_event("validate", %{"profile" => profile_params}, socket) do
     changeset = Profile.change(socket.assigns.profile, profile_params)
-    {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
+
+    {:noreply,
+     socket
+     |> assign(:profile, changeset.data)
+     |> assign(form: to_form(changeset, action: :validate))}
   end
 
   def handle_event("save", %{"profile" => profile_params}, socket) do

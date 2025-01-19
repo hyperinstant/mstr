@@ -12,6 +12,11 @@ defmodule MstrWeb.EnrollLive.Profile do
     field :track_url_2, :string
     field :track_url_3, :string
     field :email, :string
+
+    # virtual fields to store validation state
+    field :track_url_1_not_found, :boolean, virtual: true
+    field :track_url_2_not_found, :boolean, virtual: true
+    field :track_url_3_not_found, :boolean, virtual: true
   end
 
   def change(%Profile{} = profile, attrs \\ %{}) do
@@ -51,6 +56,7 @@ defmodule MstrWeb.EnrollLive.Profile do
     |> validate_change(:track_url_1, &validate_track_url/2)
     |> validate_change(:track_url_2, &validate_track_url/2)
     |> validate_change(:track_url_3, &validate_track_url/2)
+    |> maybe_preserve_not_found_errors()
   end
 
   def validate_track_url(field, track_url) do
@@ -97,7 +103,15 @@ defmodule MstrWeb.EnrollLive.Profile do
         end
       end)
 
-    add_error(changeset, field, error_text)
+    if field do
+      not_found_field = String.to_existing_atom("#{field}_not_found")
+
+      changeset
+      |> put_change(not_found_field, true)
+      |> add_error(field, error_text)
+    else
+      changeset
+    end
   end
 
   defp find_track!(tracks, track_url) do
@@ -106,5 +120,20 @@ defmodule MstrWeb.EnrollLive.Profile do
     if track == nil, do: raise("can't find track #{track_id} in #{inspect(track)}")
 
     track
+  end
+
+  defp maybe_preserve_not_found_errors(changeset) do
+    Enum.reduce([:track_url_1, :track_url_2, :track_url_3], changeset, fn field, acc ->
+      not_found_field = String.to_existing_atom("#{field}_not_found")
+
+      case {get_field(acc, not_found_field), fetch_change(acc, field)} |> dbg do
+        {true, :error} ->
+          # Field was marked as not found and hasn't changed
+          add_error(acc, field, "track is not found")
+
+        _ ->
+          acc
+      end
+    end)
   end
 end
