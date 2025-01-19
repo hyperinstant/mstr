@@ -85,7 +85,7 @@ defmodule MstrWeb.ProfileTest do
                  "nick" => "a nick",
                  "track_url_1" => "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=cadde751415f4ebb",
                  "track_url_2" => "https://open.spotify.com/track/#{track_id2}",
-                 "track_url_3" => "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=cadde751415f4ebb"
+                 "track_url_3" => "https://open.spotify.com/track/5y3mB1q4eauAdC0o9JgLGz?si=cadde751415f4ebb"
                })
 
       assert DataCase.errors_on(changeset)[:track_url_1] == ["track is not found"]
@@ -100,7 +100,7 @@ defmodule MstrWeb.ProfileTest do
                  "nick" => "a nick",
                  "track_url_1" => "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=cadde751415f4ebb",
                  "track_url_2" => "an invalid url",
-                 "track_url_3" => "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=cadde751415f4ebb"
+                 "track_url_3" => "https://open.spotify.com/track/5y3mB1q4eauAdC0o9JgLGz?si=cadde751415f4ebb"
                })
 
       assert DataCase.errors_on(changeset)[:track_url_1] == nil
