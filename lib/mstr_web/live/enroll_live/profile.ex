@@ -2,7 +2,7 @@ defmodule MstrWeb.EnrollLive.Profile do
   use Ecto.Schema
   import Ecto.Changeset
   alias SSpotify
-  alias SSpotify.Errors.InvalidTrackURLs
+  # alias SSpotify.Errors.InvalidTrackURLs
   alias __MODULE__
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -23,7 +23,7 @@ defmodule MstrWeb.EnrollLive.Profile do
 
     if changeset.valid? do
       case resolve_tracks(changeset) do
-        {:ok, %{missing: [], found: tracks}} ->
+        {:ok, %{missing: [], found: _tracks}} ->
           # {:ok,
           #  %{
           #    email: fetch_change!(changeset, :email),
@@ -82,13 +82,13 @@ defmodule MstrWeb.EnrollLive.Profile do
     changeset
   end
 
-  defp find_track!(tracks, track_url) do
-    track_id = SSpotify.extract_track_id!(track_url)
-    track = Enum.find(tracks, &(&1.id == Strack_id))
-    if track == nil, do: raise("can't find track #{track_id} in #{inspect(track)}")
+  # defp find_track!(tracks, track_url) do
+  #   track_id = SSpotify.extract_track_id!(track_url)
+  #   track = Enum.find(tracks, &(&1.id == Strack_id))
+  #   if track == nil, do: raise("can't find track #{track_id} in #{inspect(track)}")
 
-    track
-  end
+  #   track
+  # end
 
   defp find_field!(changeset, url) do
     cond do

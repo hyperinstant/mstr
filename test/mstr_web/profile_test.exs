@@ -20,9 +20,8 @@ defmodule MstrWeb.ProfileTest do
       assert DataCase.errors_on(changeset)[:track_url_3] == ["link is not recognised"]
     end
 
-    test "populates faulty track url field with the error" do
+    test "returns {:error, changeset} even if only one track was not found" do
       track_id1 = "33qPnmgyN1aRVLQfbic2Sq"
-      track_id2 = "4xeOXTjSNsyF4djgo83SiR"
       track_id3 = "5y3mB1q4eauAdC0o9JgLGz"
 
       SSpotify.Fixtures.start_fake_token_manager()
@@ -38,7 +37,7 @@ defmodule MstrWeb.ProfileTest do
                  "email" => "tes@example.com",
                  "nick" => "a nick",
                  "track_url_1" => "https://open.spotify.com/track/#{track_id1}?si=cadde751415f4ebb",
-                 "track_url_2" => "https://open.spotify.com/track/#{track_id2}?si=dae2b3b5e3134f40",
+                 "track_url_2" => "https://open.spotify.com/track/4xeOXTjSNsyF4djgo83SiR?si=dae2b3b5e3134f40",
                  "track_url_3" => "https://open.spotify.com/track/#{track_id3}?si=8184109907ad4252"
                })
 
@@ -47,7 +46,31 @@ defmodule MstrWeb.ProfileTest do
       assert DataCase.errors_on(changeset)[:track_url_3] == nil
     end
 
-    test "populates faulty track url fields with the error"
-    test "returns {:ok, profile} with tracks order exactly the were ordered in the form"
+    test "populates fields for all missing tracks with the error" do
+      SSpotify.Fixtures.start_fake_token_manager()
+
+      Req.Test.stub(SSpotify.ApiClient, fn conn ->
+        Req.Test.json(conn, %{
+          "tracks" => [nil, nil, nil]
+        })
+      end)
+
+      assert {:error, changeset} =
+               Profile.resolve(%Profile{}, %{
+                 "email" => "tes@example.com",
+                 "nick" => "a nick",
+                 "track_url_1" => "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=cadde751415f4ebb",
+                 "track_url_2" => "https://open.spotify.com/track/4xeOXTjSNsyF4djgo83SiR?si=dae2b3b5e3134f40",
+                 "track_url_3" => "https://open.spotify.com/track/5y3mB1q4eauAdC0o9JgLGz?si=8184109907ad4252"
+               })
+
+      assert DataCase.errors_on(changeset)[:track_url_1] == ["track is not found"]
+      assert DataCase.errors_on(changeset)[:track_url_2] == ["track is not found"]
+      assert DataCase.errors_on(changeset)[:track_url_3] == ["track is not found"]
+    end
+
+    test "returns error even if only one track had malformed url"
+
+    test "returns {:ok, profile} with tracks order exactly the were ordered in the form when all tracks were found"
   end
 end

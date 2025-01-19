@@ -130,5 +130,55 @@ defmodule SSpotify.TracksTest do
 
       assert {:ok, %{missing: ^urls}} = SSpotify.tracks_from(urls)
     end
+
+    test "correctly detects missing urls even if they're duplicated (all urls duplicated)" do
+      urls = [
+        "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=462304c8a05c4d39",
+        "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=462304c8a05c4d39",
+        "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=462304c8a05c4d39"
+      ]
+
+      SSpotify.Fixtures.start_fake_token_manager()
+
+      Req.Test.stub(SSpotify.ApiClient, fn conn ->
+        Req.Test.json(conn, %{"tracks" => [nil, nil, nil]})
+      end)
+
+      assert {:ok, %{missing: ^urls}} = SSpotify.tracks_from(urls)
+    end
+
+    test "correctly detects missing urls even if they're duplicated (2/3 urls are duplicated)" do
+      urls = [
+        "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=462304c8a05c4d39",
+        "https://open.spotify.com/track/4xeOXTjSNsyF4djgo83SiR?si=0dd7da796ab14cd2",
+        "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=462304c8a05c4d39"
+      ]
+
+      SSpotify.Fixtures.start_fake_token_manager()
+
+      Req.Test.stub(SSpotify.ApiClient, fn conn ->
+        Req.Test.json(conn, %{"tracks" => [nil, nil, nil]})
+      end)
+
+      assert {:ok, %{missing: ^urls}} = SSpotify.tracks_from(urls)
+    end
+
+    test "correctly detects duplicated missing urls when one track is found" do
+      id2 = "4xeOXTjSNsyF4djgo83SiR"
+      missing_url = "https://open.spotify.com/track/33qPnmgyN1aRVLQfbic2Sq?si=462304c8a05c4d39"
+
+      SSpotify.Fixtures.start_fake_token_manager()
+
+      Req.Test.stub(SSpotify.ApiClient, fn conn ->
+        Req.Test.json(conn, %{"tracks" => [nil, SSpotify.Fixtures.track_json!(id2), nil]})
+      end)
+
+      assert {:ok, %{missing: [missing_url, missing_url], found: [SSpotify.Fixtures.track!(id2)]}} ==
+               SSpotify.tracks_from([
+                 missing_url,
+                 "https://open.spotify.com/track/#{id2}?si=0dd7da796ab14cd2",
+                 missing_url
+               ])
+    end
   end
 end
