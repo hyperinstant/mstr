@@ -1,5 +1,5 @@
 defmodule SSpotify.TracksTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   alias SSpotify
   alias SSpotify.Errors.InvalidTrackURLs
 

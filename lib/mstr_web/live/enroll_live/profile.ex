@@ -23,16 +23,15 @@ defmodule MstrWeb.EnrollLive.Profile do
 
     if changeset.valid? do
       case resolve_tracks(changeset) do
-        {:ok, %{missing: [], found: _tracks}} ->
-          # {:ok,
-          #  %{
-          #    email: fetch_change!(changeset, :email),
-          #    nick: fetch_change!(changeset, :nick),
-          #    track_url_1: find_track!(tracks, fetch_change!(changeset, :track_url_1)),
-          #    track_url_2: find_track!(tracks, fetch_change!(changeset, :track_url_2)),
-          #    track_url_3: find_track!(tracks, fetch_change!(changeset, :track_url_3))
-          #  }}
-          nil
+        {:ok, %{missing: [], found: tracks}} ->
+          {:ok,
+           %{
+             email: fetch_change!(changeset, :email),
+             nick: fetch_change!(changeset, :nick),
+             track_1: find_track!(tracks, fetch_change!(changeset, :track_url_1)),
+             track_2: find_track!(tracks, fetch_change!(changeset, :track_url_2)),
+             track_3: find_track!(tracks, fetch_change!(changeset, :track_url_3))
+           }}
 
         {:ok, %{missing: missing_track_urls}} ->
           changeset =
@@ -79,14 +78,6 @@ defmodule MstrWeb.EnrollLive.Profile do
     changeset
   end
 
-  # defp find_track!(tracks, track_url) do
-  #   track_id = SSpotify.extract_track_id!(track_url)
-  #   track = Enum.find(tracks, &(&1.id == Strack_id))
-  #   if track == nil, do: raise("can't find track #{track_id} in #{inspect(track)}")
-
-  #   track
-  # end
-
   defp mark_field_as_missing(url, changeset) do
     error_text = "track is not found"
 
@@ -112,37 +103,11 @@ defmodule MstrWeb.EnrollLive.Profile do
     add_error(changeset, field, error_text)
   end
 
-  # defp validate_tracks(changeset) do
-  #   if changeset.valid? do
-  #     profile = apply_changes(changeset)
+  defp find_track!(tracks, track_url) do
+    track_id = SSpotify.extract_track_id!(track_url)
+    track = Enum.find(tracks, &(&1.id == track_id))
+    if track == nil, do: raise("can't find track #{track_id} in #{inspect(track)}")
 
-  #     profile
-  #     |> verify_spotify_tracks()
-  #     |> Enum.reduce(changeset, fn {field, error}, acc ->
-  #       add_error(acc, field, error)
-  #     end)
-  #   else
-  #     changeset
-  #   end
-  # end
-
-  # defp verify_spotify_tracks(profile) do
-  #   tracks = [profile.track_1, profile.track_2, profile.track_3]
-
-  #   case SSpotify.tracks_from(tracks) do
-  #     {:ok, _tracks} ->
-  #       []
-
-  #     {:error, %SSpotify.Errors.InvalidTrackUrl{url: url}} ->
-  #       # Find which field contains the invalid URL and add the error
-  #       field =
-  #         cond do
-  #           profile.track_1 == url -> :track_1
-  #           profile.track_2 == url -> :track_2
-  #           profile.track_3 == url -> :track_3
-  #         end
-
-  #       [{field, "link is not recognised"}]
-  #   end
-  # end
+    track
+  end
 end
