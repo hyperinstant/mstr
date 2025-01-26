@@ -1,0 +1,6 @@
+cache-prompts: true
+auto-commits: false
+test-cmd: test
+auto-test: true
+read: ["aider.md", "README.md"]
+editor: "code --wait"
