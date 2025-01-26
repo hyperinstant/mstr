@@ -1,18 +1,84 @@
-# Mstr
+# Music Universe
 
-To start your Phoenix server:
+Music Univer is an exploration of human resonance through the meanings they put in three song arrangments.
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+## Pseudonymous nature
+All accounts are pseudonymous.
+Users provide their email to be able to restore a password and a nickname used in chats.
+The system captures their timezone and registration IP address.
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+## Matching
+Every user can create a triad: a three-thong arrangement that represents something for them, which they think forms a whole through their internal sense of meaning and judgement. The key is that it's subjective.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+Users with the same triad match with each other. Matches are always one-to-one. So if three users A, B and C have the same triad they form three pairs: AB, BC and AB.
+The order of tracks in triads doesn't matter by default.
+However, users can see the match score. A perfect score is when all tracks in the pair of triads are in the same position. Then when 2/3 are in the same positions, and lastly when tracks are in the opposite order.
 
-## Learn more
+### Perfect matching
+Users can switch to perfect matching only on the triad level.
+If a user turns on the setting to enable perfect matches only, then they unmatch with all their matches who provided songs in a different order than they did.
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+## Manging triads
+
+Users can change tracks in their triad which will form a new active triad.
+So if the user had a triad with songs `A, B, C` and then changed track `C` for `D` they created a new triad `A, B, D` and the previous triad `A, B, C` became inactive.
+
+At this point all their connections for triad `A, B, C` also become inactive and they can't exchange messages with users with whom they matched through triad `A, B, C`.
+
+If the user changes track `D` back for `C` they re-activate the triad `A, B, C`.
+
+### Activation history
+
+Even though triads capture song indexes as users provided them by default it doesn't affect the activation history.
+So switching songs in the sequence of `A, B, C` -> `A, B, D` -> `E, B, D` -> `E, B, A` -> `C, B, A` will lead to the creation of four triads `[ A, B, C; A, B, D;  E, B, D; E, B, A; ]`  and activation of the triad `A, B, C` in the end.
+Every triad activation/deactivation is captured, including indexes. So the sequence above will create the following log journal:
+
+```
+entry 1:
+user_id <user_id>
+triad_id <uuid of triad A,B,C>
+track_1_id <uuid of track A>
+track_2_id <uuid of track B>
+track_3_id <uuid of track C>
+action: :activated
+ts: <date time utc>
+
+entry 2:
+user_id <user_id>
+triad_id <uuid of triad A,B,C>
+track_1_id <uuid of track A>
+track_2_id <uuid of track B>
+track_3_id <uuid of track C>
+action: :deactivated
+ts: <date time utc>
+
+entry 3:
+triad_id <uuid of triad A,B,D>
+track_1_id <uuid of track A>
+track_2_id <uuid of track B>
+track_3_id <uuid of track D>
+action: :activated
+ts: <date time utc>
+
+// ... last action
+
+entry N:
+triad_id <uuid of triad A,B,C>
+track_1_id <uuid of track C>
+track_2_id <uuid of track B>
+track_3_id <uuid of track A>
+action: :activated
+ts: <date time utc>
+```
+
+## Chats
+
+## User pairs
+
+Matched users can exchange messages as long they have two active matching triads.
+
+
+## Triads
+
+Triads themselves are chat rooms. For example, all users with triads `A, B, C` can chat with each other in the triad's room.
+The triad room names are readable random identifiers in the format `{adjective}-{noun}-{number}`.
