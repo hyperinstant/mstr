@@ -1,6 +1,6 @@
 cache-prompts: true
 auto-commits: false
-test-cmd: test
-auto-test: mix true
+test-cmd: mix true
+auto-test: true
 read: ["aider.md", "README.md"]
 editor: "code --wait"
