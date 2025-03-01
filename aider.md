@@ -2,9 +2,9 @@
 
 ## Conventions
 
-When writing code, folow these conventions
+When writing code, follow these conventions
 
 - Write simple, clean, intention-revealing code
-- Think about coupling, principle of single responsibility and rule of the single level of abstraction.
-- Follow TDD cycle: red, grean, refactor
+- Factor code with the consideration of object calisthenics, coupling & cohesion, principle of single responsibility and rule of the single level of abstraction.
+- Follow TDD cycle: red, green, refactor
 - Refactor code smells before introducing new functionality
